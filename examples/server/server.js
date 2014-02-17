@@ -1,10 +1,11 @@
-var xauth = require('../../../lib/server'),
+var xauth = require('../../lib/server'),
       express = require('express')
       cors = require('cors')
       JID = require('node-xmpp-core').JID
 
 var app = express()
 app.use(cors())
+app.use(express.static("static"))
 app.use(express.json())
 app.post("/_session", handle_auth)
 
@@ -57,4 +58,4 @@ function handle_auth(req, res) {
   })
 }
 
-app.listen(9000)
+app.listen(8000)

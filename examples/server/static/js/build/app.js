@@ -1,7 +1,7 @@
 /**
  * @jsx React.DOM
  */
-var XAuthApp = React.createClass({
+var XAuthApp = React.createClass({displayName: 'XAuthApp',
   getInitialState: function() {
     return {
       jid: "", 
@@ -26,7 +26,7 @@ var XAuthApp = React.createClass({
 
     $.ajax({
         type: "POST",
-        url: '//localhost:9000/_session',
+        url: '//localhost:8000/_session',
         data: JSON.stringify({jid: this.state.jid}),
         contentType: 'application/json',
         complete: this.authenticated
@@ -45,19 +45,19 @@ var XAuthApp = React.createClass({
 
   render: function() {
     return (
-      <div>
-        <p>Please enter your XMPP Jid: </p>
-        <p>
-          <input type="text" onChange={this.handleChange} value={this.state.jid} />
-          <input type="button" onClick={this.handleClick} value="Login"/>
-        </p>
-        <p>{this.state.message}</p>
-     </div>
+      React.DOM.div(null, 
+        React.DOM.p(null, "Please enter your XMPP Jid: " ),
+        React.DOM.p(null, 
+          React.DOM.input( {type:"text", onChange:this.handleChange, value:this.state.jid} ),
+          React.DOM.input( {type:"button", onClick:this.handleClick, value:"Login"})
+        ),
+        React.DOM.p(null, this.state.message)
+     )
     );
   }
 });
 
 React.renderComponent(
-  <XAuthApp />,
+  XAuthApp(null ),
   document.getElementById('container')
 );
