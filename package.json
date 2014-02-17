@@ -1,0 +1,20 @@
+{
+  "name": "xauth",
+  "version": "0.0.0",
+  "description": "Simple authentication through XMPP",
+  "main": "lib/server.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {
+    "cors": "~2.1.1",
+    "express": "~3.4.8",
+    "simple-xmpp": "~0.1.18"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matthieu Rakotojaona",
+  "license": "CC0"
+}
