@@ -1,6 +1,34 @@
 /**
  * @jsx React.DOM
  */
+var RandButton = React.createClass({displayName: 'RandButton',
+  getInitialState: function() {
+    return {randvalue: ""}
+  },
+
+  handleClick: function(event) {
+    $.ajax({
+      type: "GET",
+      url: '//localhost:8000/rand',
+      complete: this.update_rand
+    })
+  },
+
+  update_rand: function(data) {
+    this.state.randvalue = data.responseText
+    this.setState(this.state)
+  },
+
+  render: function() {
+    return (
+      React.DOM.p(null, 
+        React.DOM.input( {type:"text", value:this.state.randvalue} ),
+        React.DOM.input( {type:"button", onClick:this.handleClick, value:"Get random value"})
+      )
+    )
+  }
+})
+
 var XAuthApp = React.createClass({displayName: 'XAuthApp',
   getInitialState: function() {
     return {
@@ -51,7 +79,10 @@ var XAuthApp = React.createClass({displayName: 'XAuthApp',
           React.DOM.input( {type:"text", onChange:this.handleChange, value:this.state.jid} ),
           React.DOM.input( {type:"button", onClick:this.handleClick, value:"Login"})
         ),
-        React.DOM.p(null, this.state.message)
+        React.DOM.p(null, this.state.message),
+        React.DOM.p(null, 
+          RandButton(null )
+        )
      )
     );
   }
