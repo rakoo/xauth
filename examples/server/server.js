@@ -3,6 +3,8 @@ var xauth = require('../../lib/server'),
       cors = require('cors')
       JID = require('node-xmpp-core').JID
       crypto = require('crypto')
+      program = require('commander')
+
 
 var app = express()
 app.use(cors())
@@ -73,12 +75,7 @@ function handle_login(req, res) {
 
   console.log("Authenticating " + jidStr);
 
-  // The credentials of your authentication bot. This account must exist
-  // on your XMPP server.
-  bot_jid = "someusername"
-  bot_pass = "somepassword"
-
-  xauth.request_auth(bot_jid, bot_pass, "Demo site", jidStr, function(err) {
+  xauth.request_auth(program.botUser, program.botPassword, "Demo site", jidStr, function(err) {
     if (err) {
       res.send(401, "Not Authenticated!")
     } else {
@@ -92,6 +89,16 @@ function handle_login(req, res) {
       res.send(200)
     }
   })
+}
+
+program
+  .option('-u, --bot-user <username>', 'The bot username')
+  .option('-p, --bot-password <password>', 'The bot password')
+  .parse(process.argv)
+
+if (program.botUser == undefined || program.botPassword == undefined) {
+  console.error("You need a bot!")
+  return
 }
 
 app.listen(8000)
