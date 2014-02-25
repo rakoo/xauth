@@ -10,7 +10,8 @@ app.use(express.static("static"))
 app.use(express.json())
 app.use(express.cookieParser())
 
-app.post("/_session", handle_auth)
+app.post("/_session", handle_login)
+app.delete("/_session", handle_logout)
 app.get("/rand", handle_rand)
 
 function handle_rand(req, res) {
@@ -29,7 +30,19 @@ function handle_rand(req, res) {
 var auths_in_flight = {}
 var logged_in = {}
 
-function handle_auth(req, res) {
+function handle_logout(req, res) {
+  if (logged_in[req.cookies.jid] != undefined) {
+    expected = logged_in[req.cookies.jid]["cookie"]
+    if (expected == req.cookies.rand) {
+      delete(logged_in[req.cookies.jid])
+      delete(auths_in_flight[req.cookies.jid])
+      res.send(200)
+    }
+  }
+  res.send(404)
+}
+
+function handle_login(req, res) {
   if (!req.is("application/json")) {
     res.send(400, "Unsupported content type. Must be application/json")
     return
@@ -45,14 +58,14 @@ function handle_auth(req, res) {
 
   // TODO consider the base jid, 
   if (auths_in_flight[jidStr] == true) {
-    res.send(202, "Auth in process")
+    res.send(202, "Auth in progress")
     return
   }
   auths_in_flight[jidStr] = true
 
   setTimeout(function() {
     if (logged_in[jidStr] == undefined) {
-      auths_in_flight[jid.toString()] = false
+      delete(auths_in_flight[jid.toString()])
       console.log("Couldn't auth " + jidStr + " after 1 min")
       res.send(401, "Not Authenticated!")
     }
@@ -72,6 +85,7 @@ function handle_auth(req, res) {
       rand = crypto.randomBytes(10).toString('hex')
 
       logged_in[jidStr] = { cookie: rand }
+      delete(auths_in_flight[jidStr])
 
       res.cookie('rand', rand, { expires: new Date(Date.now() + 900000), httpOnly: true})
       res.cookie('jid', jidStr, { expires: new Date(Date.now() + 900000), httpOnly: true})
