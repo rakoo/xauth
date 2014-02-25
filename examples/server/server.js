@@ -17,8 +17,6 @@ app.delete("/_session", handle_logout)
 app.get("/rand", handle_rand)
 
 function handle_rand(req, res) {
-  console.log(req.cookies)
-  console.log(logged_in)
   if (logged_in[req.cookies.jid] != undefined) {
     expected = logged_in[req.cookies.jid]["cookie"]
     if (expected == req.cookies.rand) {
@@ -75,20 +73,34 @@ function handle_login(req, res) {
 
   console.log("Authenticating " + jidStr);
 
-  xauth.request_auth(program.botUser, program.botPassword, "Demo site", jidStr, function(err) {
-    if (err) {
-      res.send(401, "Not Authenticated!")
-    } else {
-      rand = crypto.randomBytes(10).toString('hex')
-
-      logged_in[jidStr] = { cookie: rand }
-      delete(auths_in_flight[jidStr])
-
-      res.cookie('rand', rand, { expires: new Date(Date.now() + 900000), httpOnly: true})
-      res.cookie('jid', jidStr, { expires: new Date(Date.now() + 900000), httpOnly: true})
-      res.send(200)
+  var errHandler = function (err) {
+    res.send(401, "Not Authenticated!")
+    removeListeners()
+  }
+  var authHandler = function(jid) {
+    if (jid != jidStr) {
+      return
     }
-  })
+    rand = crypto.randomBytes(10).toString('hex')
+
+    logged_in[jid] = { cookie: rand }
+    delete(auths_in_flight[jid])
+
+    res.cookie('rand', rand, { expires: new Date(Date.now() + 900000), httpOnly: true})
+    res.cookie('jid', jid, { expires: new Date(Date.now() + 900000), httpOnly: true})
+    res.send(200)
+    removeListeners()
+  }
+
+  auther.on('error', errHandler)
+  auther.on('auth', authHandler)
+
+  var removeListeners = function() {
+    auther.removeListener('error', errHandler)
+    auther.removeListener('auth', authHandler)
+  }
+
+  auther.auth(jidStr)
 }
 
 program
@@ -100,5 +112,7 @@ if (program.botUser == undefined || program.botPassword == undefined) {
   console.error("You need a bot!")
   return
 }
+
+var auther = new xauth.AuthRequester(program.botUser, program.botPassword, "Demo site")
 
 app.listen(8000)
